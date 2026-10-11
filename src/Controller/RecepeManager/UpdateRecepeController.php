@@ -12,6 +12,7 @@
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\Routing\Attribute\Route;
     use Symfony\Component\Security\Http\Attribute\IsGranted;
+    use Symfony\Component\Validator\Validator\ValidatorInterface;
     use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
     class UpdateRecepeController extends AbstractController
@@ -19,7 +20,8 @@
         public function __construct(
             private readonly SerializerInterface $serializer,
             private readonly EntityManagerInterface $entityManager,
-            private readonly TagAwareCacheInterface $cache
+            private readonly TagAwareCacheInterface $cache,
+            private readonly ValidatorInterface $validator
         ){}
 
 
@@ -45,6 +47,12 @@
 
             if ($updatedRecepe->getDescription()) {
                 $currentRecepe->setDescription($updatedRecepe->getDescription());
+            }
+
+            // Validation
+            $error = $this->validator->validate($currentRecepe);
+            if ($error->count() > 0) {
+                return new JsonResponse($this->serializer->serialize($error, 'json'), Response::HTTP_BAD_REQUEST, [], true);
             }
 
             // Invalidate cache

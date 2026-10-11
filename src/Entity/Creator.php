@@ -7,10 +7,50 @@
     use Doctrine\Common\Collections\Collection;
     use Doctrine\ORM\Mapping as ORM;
     use JMS\Serializer\Annotation\Groups;
+    use JMS\Serializer\Annotation\Since;
     use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
     use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
     use Symfony\Component\Security\Core\User\UserInterface;
     use Symfony\Component\Validator\Constraints as Assert;
+    use Hateoas\Configuration\Annotation as Hateoas;
+
+    // Self-discoverability for {{ GET }}
+    #[Hateoas\Relation(
+        'self',
+        href: new Hateoas\Route(
+            'creator_details',
+            parameters: ['id' => 'expr(object.getId())']
+        ),
+        exclusion: new Hateoas\Exclusion(
+            groups: ['getCreator']
+        )
+    )]
+
+    // Self-discoverability for {{ UPDATE }}
+    #[Hateoas\Relation(
+        'update',
+        href: new Hateoas\Route(
+            'update_creator',
+            //parameters: ['id' => 'expr(object.getId())']
+        ),
+        exclusion: new Hateoas\Exclusion(
+            groups: ['getCreator'],
+            excludeIf: "expr(not is_granted('ROLE_CREATOR'))"
+        )
+    )]
+
+    // Self-discoverability for {{ DELETE }}
+    #[Hateoas\Relation(
+        'delete',
+        href: new Hateoas\Route(
+            'delete_creator',
+            //parameters: ['id' => 'expr(object.getId())']
+        ),
+        exclusion: new Hateoas\Exclusion(
+            groups: ['getCreator'],
+            excludeIf: "expr(not is_granted('ROLE_CREATOR'))"
+        )
+    )]
 
     #[ORM\Entity(repositoryClass: CreatorRepository::class)]
     #[UniqueEntity('email', message: 'Il semble que cette utilisateur existe déjà')]
@@ -28,7 +68,7 @@
         private ?string $email = null;
 
         #[ORM\Column]
-        #[Groups(['getCreator', 'getRecepe'])]
+        //#[Groups(['getCreator', 'getRecepe'])]
         private array $roles = [];
 
         #[ORM\Column]
@@ -46,6 +86,11 @@
         #[ORM\ManyToMany(targetEntity: Recepe::class, mappedBy: 'creator')]//, cascade: ['remove'], orphanRemoval: true)]
         #[Groups(['getCreator'])]
         private Collection $recepes;
+
+        #[ORM\Column(length: 25, nullable: true)]
+        #[Groups(['getCreator', 'getRecepe'])]
+        #[Since('2.0')]
+        private ?string $gender = null;
 
         public function __construct()
         {
@@ -168,6 +213,18 @@
             if ($this->recepes->removeElement($recepe)) {
                 $recepe->removeCreator($this);
             }
+
+            return $this;
+        }
+
+        public function getGender(): ?string
+        {
+            return $this->gender;
+        }
+
+        public function setGender(?string $gender): static
+        {
+            $this->gender = $gender;
 
             return $this;
         }

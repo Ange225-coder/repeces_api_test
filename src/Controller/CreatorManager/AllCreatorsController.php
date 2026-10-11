@@ -28,25 +28,25 @@
         {
             $creatorList = $this->creatorRepository->findAll();
 
+            $context = SerializationContext::create();
+
             // Caching
             $idCache = 'all_creator_cache';
-            $creatorJson = $this->cache->get($idCache, function (ItemInterface $item) use ($creatorList) {
+            $creatorJson = $this->cache->get($idCache, function (ItemInterface $item) use ($creatorList, $context) {
                 // Check the caching message
                 error_log('CACHING');
 
                 $item->tag('creatorTag');
 
-                $context = SerializationContext::create();
                 $context->setGroups(['getCreator']);
+
+                // Versioning
+                $version = $this->versioningService->getVersion();
+                $context->setVersion($version);
 
                 return $this->serializer->serialize($creatorList, 'json', $context);
             });
 
-            // Versioning
-            $version = $this->versioningService->getVersion();
-            $context = SerializationContext::create();
-            $context->setVersion($version);
-
-            return new JsonResponse($creatorJson, Response::HTTP_OK, ['X-API-VERSION' => $version], true);
+            return new JsonResponse($creatorJson, Response::HTTP_OK, ['X-API-VERSION' => $this->versioningService->getVersion()], true);
         }
     }

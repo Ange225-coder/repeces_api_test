@@ -15,6 +15,46 @@
     use Doctrine\ORM\Mapping as ORM;
     use JMS\Serializer\Annotation\Groups;
     use Symfony\Component\Validator\Constraints as Assert;
+    use Hateoas\Configuration\Annotation as Hateoas;
+
+
+    // Self-discoverability for {{ GET }}
+    #[Hateoas\Relation(
+        'self',
+        href: new Hateoas\Route(
+            'recepe_details',
+            parameters: ['id' => 'expr(object.getId())']
+        ),
+        exclusion: new Hateoas\Exclusion(
+            groups: ['getRecepe']
+        )
+    )]
+
+    // Self-discoverability for {{ UPDATE }}
+    #[Hateoas\Relation(
+        'update',
+        href: new Hateoas\Route(
+            'recepe_details',
+            parameters: ['id' => 'expr(object.getId())']
+        ),
+        exclusion: new Hateoas\Exclusion(
+            groups: ['getRecepe'],
+            excludeIf: "expr(not is_granted('ROLE_CREATOR'))"
+        )
+    )]
+
+    // Self-discoverability for {{ DELETE }}
+    #[Hateoas\Relation(
+        'delete',
+        href: new Hateoas\Route(
+            'delete_recepe',
+            parameters: ['id' => 'expr(object.getId())']
+        ),
+        exclusion: new Hateoas\Exclusion(
+            groups: ['getRecepe'],
+            excludeIf: "expr(not is_granted('ROLE_CREATOR'))"
+        )
+    )]
 
     #[ORM\Entity(repositoryClass: RecepeRepository::class)]
     class Recepe
