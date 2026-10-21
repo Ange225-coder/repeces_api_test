@@ -7,8 +7,8 @@
     use App\Service\VersioningService;
     use Doctrine\ORM\EntityManagerInterface;
     use JMS\Serializer\SerializationContext;
-
     use JMS\Serializer\SerializerInterface;
+    use Nelmio\ApiDocBundle\Attribute\Model;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\HttpFoundation\JsonResponse;
     use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +18,37 @@
     use Symfony\Component\Security\Http\Attribute\IsGranted;
     use Symfony\Component\Validator\Validator\ValidatorInterface;
     use Symfony\Contracts\Cache\TagAwareCacheInterface;
+    use OpenApi\Attributes as OA;
+
+    // Documentation
+    #[OA\Post(summary: 'Créer une recette')]
+    #[OA\RequestBody(
+        description: 'Création d\'une recette',
+        content: new OA\JsonContent(
+            ref: new Model(type: Recepe::class, groups: ['getRecepe'])
+        )
+    )]
+    #[OA\Response(
+        response: 201,
+        description: 'Une recette vient d\'être crée',
+        content: new OA\JsonContent(
+            ref: new Model(type: Recepe::class, groups: ['getRecepe'])
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'La requête a été mal formulée',
+    )]
+    #[OA\Response(
+        response: 401,
+        description: 'Vous n\'êtes pas autorisé a éffectuer cette requête ou le token JWT est invalide'
+    )]
+    #[OA\Response(
+        response: 403,
+        description: 'Vous n\'avez pas les droits suffisants pour éffectuer cette requête'
+    )]
+    #[OA\Tag(name: 'Recepes Manager')]
+
 
     class CreateRecepeController extends AbstractController
     {

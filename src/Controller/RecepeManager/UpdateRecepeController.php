@@ -6,6 +6,7 @@
     use App\Entity\Recepe;
     use Doctrine\ORM\EntityManagerInterface;
     use JMS\Serializer\SerializerInterface;
+    use Nelmio\ApiDocBundle\Attribute\Model;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\HttpFoundation\JsonResponse;
     use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +15,45 @@
     use Symfony\Component\Security\Http\Attribute\IsGranted;
     use Symfony\Component\Validator\Validator\ValidatorInterface;
     use Symfony\Contracts\Cache\TagAwareCacheInterface;
+    use OpenApi\Attributes as OA;
+
+    // Documentation
+    #[OA\Put(summary: 'Mettre une recette à jour en fonction de son ID')]
+    #[OA\RequestBody(
+        description: 'Mettre à jour une recette en fonction de son identifiant',
+        required: true,
+        content: new OA\JsonContent(
+            ref: new Model(type: Recepe::class, groups: ['getRecepe'])
+        )
+    )]
+    #[OA\Parameter(
+        name: 'id',
+        description: 'L\'identifiant de la recette',
+        in: 'path',
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\Response(
+        response: 204,
+        description: 'Le recette à été modifié'
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'La requête a été mal formulée',
+    )]
+    #[OA\Response(
+        response: 401,
+        description: 'Vous n\'êtes pas autorisé a éffectuer cette requête ou le token JWT est invalide'
+    )]
+    #[OA\Response(
+        response: 403,
+        description: 'Vous n\'avez pas les droits suffisants pour éffectuer cette requête'
+    )]
+    #[OA\Response(
+        response: 404,
+        description: 'La recette n\'as pas été trouvé'
+    )]
+    #[OA\Tag(name: 'Recepes Manager')]
+
 
     class UpdateRecepeController extends AbstractController
     {

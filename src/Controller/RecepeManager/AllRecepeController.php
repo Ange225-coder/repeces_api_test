@@ -2,10 +2,12 @@
 
     namespace App\Controller\RecepeManager;
 
+    use App\Entity\Recepe;
     use App\Repository\RecepeRepository;
     use App\Service\VersioningService;
     use JMS\Serializer\SerializationContext;
     use JMS\Serializer\SerializerInterface;
+    use Nelmio\ApiDocBundle\Attribute\Model;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\HttpFoundation\JsonResponse;
     use Symfony\Component\HttpFoundation\Request;
@@ -13,6 +15,31 @@
     use Symfony\Component\Routing\Attribute\Route;
     use Symfony\Contracts\Cache\ItemInterface;
     use Symfony\Contracts\Cache\TagAwareCacheInterface;
+    use OpenApi\Attributes as OA;
+
+    // Documentation
+    #[OA\Get(summary: 'Récupérer la liste des recettes')]
+    #[OA\Parameter(
+        name: 'page',
+        description: 'définir la page qu\'on veut',
+        in: 'query',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Parameter(
+        name: 'limit',
+        description: 'définir la limit des recettes à récupérer',
+        in: 'query',
+        schema: new OA\Schema(type: 'int')
+    )]
+    #[OA\Response(
+        response: '200',
+        description: 'La liste des livre à été récupérer',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(new Model(type: Recepe::class, groups: ['getRecepe']))
+        )
+    )]
+    #[OA\Tag(name: 'Recepes Manager')]
 
     class AllRecepeController extends AbstractController
     {
